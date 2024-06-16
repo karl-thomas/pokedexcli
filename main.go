@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/karl-thomas/pokedexcli/pokeapi"
 )
 
 func main() {
@@ -27,13 +29,18 @@ func commandHelp() error {
 	return nil
 }
 
+type config struct {
+	next string
+	prev string
+}
+
 func commandExit() error {
 	os.Exit(0)
 	return nil
 }
 
 func commandMap() error {
-	fmt.Println("Map command")
+	pokeapi.FetchLocationArea()
 	return nil
 }
 
@@ -52,6 +59,11 @@ func commands() map[string]cliCommand {
 		"map": {
 			name:        "map",
 			description: "The map command displays the names of 20 location areas in the Pokemon world. Each subsequent call to map should display the next 20 locations, and so on.",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "The map command displays the names of previous 20 location areas in the Pokemon world. This is the reverse of the map command.",
 			callback:    commandMap,
 		},
 	}
