@@ -10,28 +10,23 @@ import (
 
 const baseURL = "https://pokeapi.co/api/v2/"
 
-func FetchLocationArea() {
-	client := NewClient()
-	resp, err := client.httpClient.Get(baseURL + "location-area")
+func (c *Client) FetchLocationAreas() (LocationAreaResponse, error) {
+	resp, err := c.httpClient.Get(baseURL + "location-area")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer resp.Body.Close()
+
+	dat, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return LocationAreaResponse{}, err
+	}
 	var locationAreaResponse LocationAreaResponse
-	handler(resp, &locationAreaResponse)
-	log.Println(locationAreaResponse)
-}
-
-func handler(r *http.Response, params interface{}) {
-	defer r.Body.Close()
-
-	dat, err := io.ReadAll(r.Body)
+	err = json.Unmarshal(dat, &locationAreaResponse)
 	if err != nil {
-		return
+		return LocationAreaResponse{}, err
 	}
-	err = json.Unmarshal(dat, &params)
-	if err != nil {
-		return
-	}
+	return locationAreaResponse, nil
 }
 
 type Client struct {
@@ -44,15 +39,4 @@ func NewClient() Client {
 			Timeout: time.Minute,
 		},
 	}
-}
-
-type LocationAreaResponse struct {
-	Count    int       `json:"count"`
-	Next     *string   `json:"next"`
-	Previous *string   `json:"previous"`
-	Results  []Results `json:"results"`
-}
-type Results struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
 }
