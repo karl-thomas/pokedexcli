@@ -11,10 +11,20 @@ func StartRepl(config *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	replMessage()
 	for scanner.Scan() {
-		command := cleanInput(scanner.Text())
+		inputs := cleanInput(scanner.Text())
+		if len(inputs) == 0 {
+			replMessage()
+			continue
+		}
+
+		command := inputs[0]
+		args := []string{}
+		if len(inputs) > 1 {
+			args = inputs[1:]
+		}
 
 		if res, exists := commands()[command]; exists {
-			err := res.callback(config)
+			err := res.callback(config, args...)
 			if err != nil {
 				fmt.Println("Error:", err)
 			}
@@ -26,8 +36,8 @@ func StartRepl(config *config) {
 	}
 }
 
-func cleanInput(input string) string {
-	return strings.TrimSpace(strings.ToLower(input))
+func cleanInput(input string) []string {
+	return strings.Fields(strings.TrimSpace(strings.ToLower(input)))
 }
 
 func replMessage() {
@@ -37,7 +47,7 @@ func replMessage() {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 func commands() map[string]cliCommand {
@@ -61,6 +71,11 @@ func commands() map[string]cliCommand {
 			name:        "mapb",
 			description: "The map command displays the names of previous 20 location areas in the Pokemon world. This is the reverse of the map command.",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore <location area name>",
+			description: "The explore command displays the names of the Pokemon in a location area. The location area is specified by the user.",
+			callback:    commandExplore,
 		},
 	}
 }

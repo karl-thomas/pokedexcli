@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func commandMap(config *config) error {
+func commandMap(config *config, args ...string) error {
 	resp, err := config.pokeApi.FetchLocationAreas(config.nextLocationAreaUrl)
 	if err != nil {
 		return err
