@@ -10,8 +10,12 @@ import (
 
 const baseURL = "https://pokeapi.co/api/v2/"
 
-func (c *Client) FetchLocationAreas() (LocationAreaResponse, error) {
-	resp, err := c.httpClient.Get(baseURL + "location-area")
+func (c *Client) FetchLocationAreas(pageUrl *string) (LocationAreaResponse, error) {
+	fullUrl := baseURL + "location-area"
+	if pageUrl != nil {
+		fullUrl = *pageUrl
+	}
+	resp, err := c.httpClient.Get(fullUrl)
 	if err != nil {
 		log.Fatal(err)
 	}

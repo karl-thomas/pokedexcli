@@ -7,14 +7,14 @@ import (
 	"strings"
 )
 
-func StartRepl() {
+func StartRepl(config *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	replMessage()
 	for scanner.Scan() {
 		command := cleanInput(scanner.Text())
 
 		if res, exists := commands()[command]; exists {
-			err := res.callback()
+			err := res.callback(config)
 			if err != nil {
 				fmt.Println("Error:", err)
 			}
@@ -37,12 +37,7 @@ func replMessage() {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
-}
-
-type config struct {
-	next string
-	prev string
+	callback    func(*config) error
 }
 
 func commands() map[string]cliCommand {
@@ -65,7 +60,7 @@ func commands() map[string]cliCommand {
 		"mapb": {
 			name:        "mapb",
 			description: "The map command displays the names of previous 20 location areas in the Pokemon world. This is the reverse of the map command.",
-			callback:    commandMap,
+			callback:    commandMapb,
 		},
 	}
 }
