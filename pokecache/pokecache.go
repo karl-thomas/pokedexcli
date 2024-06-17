@@ -1,7 +1,6 @@
 package pokecache
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -26,7 +25,6 @@ func NewCache(interval time.Duration) *Cache {
 func reapLoop(c *Cache) {
 	ticker := time.NewTicker(c.interval)
 	for range ticker.C {
-		fmt.Println("tick")
 		c.reap()
 	}
 }
@@ -36,7 +34,6 @@ func (c *Cache) reap() {
 	for key, entry := range c.entries {
 		if now.Sub(entry.createdAt) > c.interval {
 			c.mu.Lock()
-			fmt.Println("deleting", key)
 			delete(c.entries, key)
 			c.mu.Unlock()
 		}
