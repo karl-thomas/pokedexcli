@@ -2,10 +2,13 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/karl-thomas/pokedexcli/pokecache"
 )
 
 const baseURL = "https://pokeapi.co/api/v2/"
@@ -15,6 +18,16 @@ func (c *Client) FetchLocationAreas(pageUrl *string) (LocationAreaResponse, erro
 	if pageUrl != nil {
 		fullUrl = *pageUrl
 	}
+	if cached, ok := c.cache.Get(fullUrl); ok {
+		var locationAreaResponse LocationAreaResponse
+		err := json.Unmarshal(cached, &locationAreaResponse)
+		if err != nil {
+			return LocationAreaResponse{}, err
+		}
+		fmt.Println("Cache hit")
+		return locationAreaResponse, nil
+	}
+
 	resp, err := c.httpClient.Get(fullUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -30,10 +43,13 @@ func (c *Client) FetchLocationAreas(pageUrl *string) (LocationAreaResponse, erro
 	if err != nil {
 		return LocationAreaResponse{}, err
 	}
+
+	c.cache.Set(fullUrl, dat)
 	return locationAreaResponse, nil
 }
 
 type Client struct {
+	cache      *pokecache.Cache
 	httpClient http.Client
 }
 
@@ -42,5 +58,6 @@ func NewClient() Client {
 		httpClient: http.Client{
 			Timeout: time.Minute,
 		},
+		cache: pokecache.NewCache(time.Second * 10),
 	}
 }
